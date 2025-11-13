@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda de Recetas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1 class="text-center">Buscar Recetas</h1>
+    <form method="POST" action="{{ url_for('index') }}">
+        <div class="mb-3">
+            <label for="query" class="form-label">Ingrediente o plato</label>
+            <input type="text" class="form-control" id="query" name="query" placeholder="Ej. Pollo, Pasta, etc." required>
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    {% if error %}
+    <div class="alert alert-danger mt-3" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
