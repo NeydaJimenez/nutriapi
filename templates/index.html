@@ -1,29 +1,30 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Búsqueda de Recetas</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Buscar alimento{% endblock %}
 
-<div class="container mt-5">
-    <h1 class="text-center">Buscar Recetas</h1>
-    <form method="POST" action="{{ url_for('index') }}">
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+  <div class="card shadow p-4 w-100" style="max-width: 400px; background-color: var(--bs-success-bg-subtle);">
+    <div class="card-body text-center">
+      <h2 class="card-title text-success mb-3">Buscar alimento</h2>
+      <p class="card-text text-muted mb-4">Introduce el nombre de un alimento para ver su información nutricional.</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert alert-warning">
+            {% for msg in messages %}
+              {{ msg }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('buscar') }}">
         <div class="mb-3">
-            <label for="query" class="form-label">Ingrediente o plato</label>
-            <input type="text" class="form-control" id="query" name="query" placeholder="Ej. Pollo, Pasta, etc." required>
+          <input type="text" name="alimento" class="form-control form-control-lg text-center" placeholder="Ejemplo: 100g manzana" required>
         </div>
-        <button type="submit" class="btn btn-primary">Buscar</button>
-    </form>
-
-    {% if error %}
-    <div class="alert alert-danger mt-3" role="alert">
-        {{ error }}
+        <button type="submit" class="btn btn-success btn-lg w-100">Buscar</button>
+      </form>
     </div>
-    {% endif %}
+  </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

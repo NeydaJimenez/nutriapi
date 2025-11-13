@@ -1,39 +1,52 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import requests
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = "clave_secreta_123"
 
-APP_ID = os.getenv('EDAMAM_APP_ID')
-APP_KEY = os.getenv('EDAMAM_APP_KEY')
+APP_ID = "9fa1bad3"
+APP_KEY = "bb57dbb4fba8dc9bfead28b22d924aea"
 
-BASE_URL = "https://api.edamam.com/api/recipes/v2"
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        query = request.form['query']
-        from_ = 0 
-        to = 5     
-        url = f"{BASE_URL}?type=public&q={query}&app_id={APP_ID}&app_key={APP_KEY}&from={from_}&to={to}"
-
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            data = response.json()
-            recipes = data['hits']
-            return render_template('results.html', recipes=recipes, query=query)
-        else:
-            error_message = "Hubo un error al obtener los datos. Intenta nuevamente."
-            return render_template('index.html', error=error_message)
     return render_template('index.html')
 
-@app.route('/results', methods=['GET'])
-def results():
+@app.route('/buscar', methods=['POST'])
+def buscar():
+    alimento = request.form.get('alimento', '').strip().lower()
 
+    if not alimento:
+        flash("Por favor, ingresa un alimento para analizar.")
+        return redirect(url_for('index'))
 
-    if __name__ == '__main__':
-        app.run(debug=True)
+    try:
+        url = (
+            f"https://api.edamam.com/api/nutrition-data"
+            f"?app_id={APP_ID}&app_key={APP_KEY}&ingr={alimento}"
+        )
+        respuesta = requests.get(url, timeout=5)
+
+        if respuesta.status_code != 200:
+            return render_template('resultados.html', error=f"Error {respuesta.status_code}: no se pudo obtener datos.")
+
+        data = respuesta.json()
+        if not data or data.get("calories", 0) == 0:
+            return render_template('resultados.html', error=f"No se encontró información para '{alimento}'.")
+
+        alimento_info = {
+            "nombre": alimento,
+            "calorias": data.get("calories", "N/A"),
+            "peso_total": data.get("totalWeight", "N/A"),
+            "nutrientes": {}
+        }
+
+        for key, val in data.get("totalNutrients", {}).items():
+            alimento_info["nutrientes"][val["label"]] = round(val["quantity"], 2)
+
+        return render_template("resultados.html", alimento=alimento_info)
+
+    except Exception as e:
+        return render_template('resultados.html', error=f"Ocurrió un error: {e}")
+
+if __name__ == '__main__':
+    app.run(debug=True)
