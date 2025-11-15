@@ -1,25 +1,46 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block title %}Resultados{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-  <div class="card shadow p-4 w-100" style="max-width: 500px; background-color: var(--bs-success-bg-subtle);">
-    <div class="card-body text-center">
-      {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Volver</a>
-      {% elif alimento %}
-        <h2 class="text-success mb-3">{{ alimento.nombre }}</h2>
-        <ul class="list-group mb-3 text-start">
-          <li class="list-group-item"><strong>Calorías:</strong> {{ alimento.calorias }} kcal</li>
-          <li class="list-group-item"><strong>Peso total:</strong> {{ alimento.peso_total }} g</li>
-          {% for key, value in alimento.nutrientes.items() %}
-            <li class="list-group-item"><strong>{{ key }}:</strong> {{ value }} g</li>
-          {% endfor %}
-        </ul>
-        <a href="{{ url_for('index') }}" class="btn btn-success">🔁 Analizar otro alimento</a>
-      {% endif %}
-    </div>
-  </div>
+
+{% if error %}
+<div class="alert alert-danger text-center">
+    <strong>Error:</strong> {{ error }}
 </div>
+<a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Volver</a>
+
+{% else %}
+
+<div class="card shadow mx-auto" style="max-width: 700px;">
+    <div class="card-body">
+
+        <h3 class="text-center">{{ description }}</h3>
+        <p class="text-center text-muted">Valores por cada 100 g</p>
+
+        <table class="table table-striped mt-4">
+            <thead class="table-primary">
+                <tr>
+                    <th>Nutriente</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in nutrients %}
+                <tr>
+                    <td>{{ n.nombre }}</td>
+                    <td><strong>{{ n.valor }}</strong> {{ n.unidad }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{{ url_for('index') }}" class="btn btn-primary w-100 mt-3">
+            ← Buscar otro alimento
+        </a>
+
+    </div>
+</div>
+
+{% endif %}
 {% endblock %}

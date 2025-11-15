@@ -1,52 +1,66 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request
 import requests
 
 app = Flask(__name__)
-app.secret_key = "clave_secreta_123"
 
-APP_ID = "9fa1bad3"
-APP_KEY = "bb57dbb4fba8dc9bfead28b22d924aea"
+API_KEY = "H0mW3HBzINpWvLxWDopaenqJI4kL2fKIMoq5eygL"
+API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search"
 
-@app.route('/')
+TRADUCCIONES = {
+    "Energy": "Energía",
+    "Protein": "Proteína",
+    "Total lipid (fat)": "Grasas",
+    "Carbohydrate, by difference": "Carbohidratos",
+    "Fiber, total dietary": "Fibra",
+    "Sugars, total including NLEA": "Azúcares",
+    "Calcium, Ca": "Calcio",
+    "Iron, Fe": "Hierro",
+    "Sodium, Na": "Sodio",
+    "Vitamin C, total ascorbic acid": "Vitamina C",
+    "Vitamin D (D2 + D3)": "Vitamina D"
+}
+
+def traducir(nombre):
+    return TRADUCCIONES.get(nombre, nombre)
+
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/buscar', methods=['POST'])
-def buscar():
-    alimento = request.form.get('alimento', '').strip().lower()
+@app.route("/resultados", methods=["POST"])
+def resultados():
+    query = request.form.get("query")
 
-    if not alimento:
-        flash("Por favor, ingresa un alimento para analizar.")
-        return redirect(url_for('index'))
+    params = {
+        "api_key": API_KEY,
+        "query": query,
+        "pageSize": 1
+    }
 
-    try:
-        url = (
-            f"https://api.edamam.com/api/nutrition-data"
-            f"?app_id={APP_ID}&app_key={APP_KEY}&ingr={alimento}"
-        )
-        respuesta = requests.get(url, timeout=5)
+    response = requests.get(API_URL, params=params)
 
-        if respuesta.status_code != 200:
-            return render_template('resultados.html', error=f"Error {respuesta.status_code}: no se pudo obtener datos.")
+    if response.status_code != 200:
+        return render_template("resultados.html", error="Error al conectar con la API USDA")
 
-        data = respuesta.json()
-        if not data or data.get("calories", 0) == 0:
-            return render_template('resultados.html', error=f"No se encontró información para '{alimento}'.")
+    data = response.json()
 
-        alimento_info = {
-            "nombre": alimento,
-            "calorias": data.get("calories", "N/A"),
-            "peso_total": data.get("totalWeight", "N/A"),
-            "nutrientes": {}
-        }
+    if "foods" not in data or len(data["foods"]) == 0:
+        return render_template("resultados.html", error="No se encontraron alimentos con ese nombre.")
 
-        for key, val in data.get("totalNutrients", {}).items():
-            alimento_info["nutrientes"][val["label"]] = round(val["quantity"], 2)
+    alimento = data["foods"][0]
+    descripcion = alimento.get("description", "Sin descripción")
 
-        return render_template("resultados.html", alimento=alimento_info)
+    nutrientes_crudos = alimento.get("foodNutrients", [])
 
-    except Exception as e:
-        return render_template('resultados.html', error=f"Ocurrió un error: {e}")
+    nutrientes = []
+    for n in nutrientes_crudos:
+        nombre = traducir(n.get("nutrientName", ""))
+        valor = n.get("value", 0)
+        unidad = n.get("unitName", "")
+        nutrientes.append({"nombre": nombre, "valor": valor, "unidad": unidad})
 
-if __name__ == '__main__':
+    return render_template("resultados.html", description=descripcion, nutrients=nutrientes)
+
+
+if __name__ == "__main__":
     app.run(debug=True)
