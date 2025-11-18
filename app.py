@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__)
 
-API_KEY = "H0mW3HBzINpWvLxWDopaenqJI4kL2fKIMoq5eygL"
+API_KEY = ""
 API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search"
 
 TRADUCCIONES = {
