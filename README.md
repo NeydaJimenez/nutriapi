@@ -11,7 +11,7 @@ Decidimos cambiar de API debido a que la que seleccionamos inicialmente desconti
 Después de investigar varias alternativas, elegimos FoodData Central ya que ofrece acceso público, una base de datos amplia y documentación clara.  
 Por estas razones, consideramos que era la mejor opción para continuar trabajando.
 
-
+//Recuerde quitar la primero 4 caracteres de la linea
 api - JMNNVjPpTkocicJOi8P9jtbi5nhG72Q2dfON1CACajDt
 
 
